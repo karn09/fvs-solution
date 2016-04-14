@@ -41,8 +41,12 @@ function createTreeObject (contents) {
   let hash = getSha1(contents);
   let dir = '.fvs/objects/' + hash.slice(0, 2);
   let name = hash.slice(2);
-  fs.mkdirSync(dir);
-  fs.writeFileSync(dir + '/' + name, contents, 'utf8');
+  try {
+    fs.statSync(dir);
+  } catch (err) {
+    fs.mkdirSync(dir);
+    fs.writeFileSync(dir + '/' + name, contents, 'utf8');
+  }
   return hash;
 }
 

@@ -14,7 +14,10 @@
     "mocha": "^2.4.5"
   },
   "dependencies": {
-    "commander": "^2.9.0"
+    "commander": "^2.9.0",
+    "rimraf": "^2.5.2"
   },
-  "bin" : { "fvs" : "./fvs.js" }
+  "bin": {
+    "fvs": "./fvs.js"
+  }
 }
