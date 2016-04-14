@@ -20,6 +20,23 @@
 const fs = require('fs');
 const getSha1 = require('./util').getSha1;
 
+// here are two helper functions you should write first!
+function createFVSObject (fileContents) {
+  // a. Hash the contents of the file
+  // b. Use the first two characters of the hash as the directory in .fvs/objects
+  // c. Write a file whose name is the rest of the hash, and whose contents is the contents of the file
+  // d. Return the hash!
+}
+
+function createBlobObject (fileName) {
+  // this will use our createFVSObject function above!
+}
+
+function updateIndex (index) {
+  // a. check if the file already has an index entry, and remove it if it does!
+  // b. add the new line to the index
+}
+
 module.exports.init = function () {
   let root = fs.readdirSync('./');
   // step 1. if a .fvs file already exists, we should short circuit
@@ -40,10 +57,9 @@ module.exports.add = function () {
   // step 0b. create the index if none exists
 
   // step 1: create a 'blob' object in .fvs/objects
-
-    // a. Hash the contents of the file
-    // b. Use the first two characters of the hash as the directory in .fvs/objects
-    // c. Write a file whose name is the rest of the hash, and whose contents is a 'blob' of the file
+  /*
+    Hey, remember those functions we wrote earlier...?
+  */
 
   // step 2: add the file to the index
   /*
@@ -52,8 +68,8 @@ module.exports.add = function () {
     your index entry for this file should read data/something.txt 2ba0f3bff73bd3f3ds212ba0f3bff73bd3f3ds21.
   */
 
-      // a. check if the file already has an index entry, and remove it if it does!
-      // b. add the new line to the index
+    // a. check if the file already has an index entry, and remove it if it does!
+    // b. add the new line to the index
 }
 
 module.exports.commit = function () {
@@ -87,3 +103,7 @@ module.exports.handleDefault = function () {
   // we'll execute this function if we don't enter a recognized command!
   // check out the spec to see how to make this pass!
 }
+
+module.exports.createFVSObject = createFVSObject;
+module.exports.createBlobObject = createBlobObject;
+module.exports.updateIndex = updateIndex;

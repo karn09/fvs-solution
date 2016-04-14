@@ -22,7 +22,7 @@ const getSha1 = require('./util').getSha1;
 
 function createBlobObject (fileName) {
   let fileContents = fs.readFileSync('./' + fileName, 'utf8');
-  return createFVSObject(fileContents)
+  return createFVSObject(fileContents);
 }
 
 function createFVSObject (fileContents) {
@@ -32,6 +32,13 @@ function createFVSObject (fileContents) {
   fs.mkdirSync(dir);
   fs.writeFileSync(dir + '/' + name, fileContents, 'utf8');
   return hash;
+}
+
+function updateIndex (index) {
+  index = index.filter(entry => entry.split(' ')[0] !== fileName);
+  index.push(fileName + ' ' + blobRef);
+  index = index.join('\n');
+  fs.writeFileSync('./.fvs/index', index, 'utf8');
 }
 
 module.exports.init = function () {
@@ -65,14 +72,7 @@ module.exports.add = function () {
   // step 2: add the file to the index
   let index = fs.readFileSync('./.fvs/index', 'utf8') || [];
   if (typeof index === 'string') index = index.split('\n');
-
-  // a. check if the file already has an index entry, and remove it if it does!
-  index = index.filter(entry => entry.split(' ')[0] !== fileName);
-
-  // b. add the new line to the index
-  index.push(fileName + ' ' + blobRef);
-  index = index.join('\n');
-  fs.writeFileSync('./.fvs/index', index, 'utf8');
+  updateIndex(index);
 }
 
 module.exports.commit = function () {
@@ -105,3 +105,7 @@ module.exports.handleDefault = function () {
   fs.mkdirSync('logs');
   fs.writeFileSync('./logs/error.txt', 'Error');
 }
+
+module.exports.createFVSObject = createFVSObject;
+module.exports.createBlobObject = createBlobObject;
+module.exports.updateIndex = updateIndex;
