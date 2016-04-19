@@ -28,19 +28,35 @@ function updateIndex (index, fileName, blobRef) {
   index.push(fileName + ' ' + blobRef);
   index = index.join('\n');
   fs.writeFileSync('./.fvs/index', index, 'utf8');
+
+  return index;
+}
+
+function objectReader (hash) {
+  let dir = '.fvs/objects/' + hash.slice(0, 2);
+  let name = hash.slice(2);
+  return fs.readFileSync(`.fvs/objects/${dir}/${name}`, 'utf8');
+}
+
+function writeToWorkingCopy (commitHash) {
+  let commitFile = objectReader(commitHash);
+  let treeHash = commitFile.split('\n').map(line => line.split(' '))[1];
+
+  // todo
+  return '';
 }
 
 module.exports.init = function () {
   let root = fs.readdirSync('./');
 
-  if (~root.indexOf('.fvs')) throw '.fvs already exists';
+  if (root.indexOf('.fvs') !== -1) throw '.fvs already exists';
 
   fs.mkdirSync('.fvs');
   fs.mkdirSync('.fvs/objects');
   fs.mkdirSync('.fvs/refs');
   fs.writeFileSync('./.fvs/HEAD', 'ref: refs/master');
   fs.writeFileSync('./.fvs/refs/master');
-}
+};
 
 module.exports.add = function () {
   let root = fs.readdirSync('./.fvs');
@@ -53,13 +69,13 @@ module.exports.add = function () {
   let blobRef = createBlobObject(fileName);
 
   // step 2: add the file to the index
-  if (!~root.indexOf('index')) fs.writeFileSync('./.fvs/index', '');
+  if (root.indexOf('index') === -1) fs.writeFileSync('./.fvs/index', '');
   let index = fs.readFileSync('./.fvs/index', 'utf8') || [];
   if (typeof index === 'string') index = index.split('\n');
   updateIndex(index, fileName, blobRef);
 
   return blobRef;
-}
+};
 
 module.exports.commit = function () {
   let commitMessage = process.argv.slice(2)[1];
@@ -84,17 +100,47 @@ module.exports.commit = function () {
   fileContents = fileContents
     .map(line => line.join(' '))
     .join('\n');
-  let commitObjRef = createFVSObject(fileContents);
+  let commitHash = createFVSObject(fileContents);
 
   // step 3. point the current branch at the new commit object
-  fs.writeFileSync('./.fvs/' + path, commitObjRef, 'utf8');
+  fs.writeFileSync('./.fvs/' + path, commitHash, 'utf8');
 
-  return commitObjRef;
+  return commitHash;
+};
+
+module.exports.branch = function () {
+  let branchName = process.argv.slice(2)[1];
+  // step 1. get the hash from HEAD
+  let currentBranch = fs.readFileSync('./.fvs/HEAD', 'utf8'),
+      path = currentBranch.split(': ')[1],
+      currentCommitHash = fs.readFileSync('./.fvs/' + path, 'utf8');
+
+  // step 2. create the branch file at refs/
+  // NOTE: in real Git, this would be at refs/heads/ (but we can simplify it here)
+  fs.writeFileSync('./.fvs/refs/' + branchName, currentCommitHash, 'utf8');
+
+  return currentCommitHash;
+};
+
+module.exports.checkout = function () {
+  let branchName = process.argv.slice(2)[1];
+
+  // step 1. get the commit hash that the branch points to
+  let commitHash = fs.readFileSync('./.fvs/refs/' + branchName, 'utf8');
+
+  // step 2. write the contents of the file tree to the working copy
+  let index = writeToWorkingCopy(commitHash);
+
+  // step 3. write the file entries to the index
+  fs.writeFileSync('./.fvs/index', index, 'utf8');
+
+  // step 4. point HEAD at the new branch
+  fs.writeFileSync('./.fvs/HEAD', 'ref: refs/' + branchName);
 }
 
 module.exports.handleDefault = function () {
   throw 'Not a recognized command!';
-}
+};
 
 module.exports.createFVSObject = createFVSObject;
 module.exports.createBlobObject = createBlobObject;

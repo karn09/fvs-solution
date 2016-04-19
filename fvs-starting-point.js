@@ -1,7 +1,5 @@
 'use strict';
 
-'use strict';
-
 /**
 * You'll need be installing fvs as a global executable on your machine!
 * The steps are below - but go ahead and take some time to try figuring it out on your own!

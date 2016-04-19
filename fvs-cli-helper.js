@@ -14,6 +14,12 @@ module.exports = function () {
       case 'commit':
         fvs.commit();
         break;
+      case 'branch':
+        fvs.branch();
+        break;
+      case 'checkout':
+        fvs.checkout();
+        break;
       default:
         fvs.handleDefault();
     }

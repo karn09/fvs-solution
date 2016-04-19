@@ -111,11 +111,11 @@ describe('FVS', function () {
       it('updates an existing entry in the index', function () {
         fvs.updateIndex(index, fileName, hash);
 
+        fs.writeFileSync('test1.txt', 'test1 edited content', 'utf8');
         hash = getSha1('test1 edited content');
-        index = ['test1.txt' + ' ' + hash];
-        fvs.updateIndex(index, fileName, hash);
+        let newIndex = fvs.updateIndex(index, fileName, hash);
 
-        expect(fs.readFileSync('./.fvs/index', 'utf8')).to.be.equal(index[0]);
+        expect(fs.readFileSync('./.fvs/index', 'utf8')).to.be.equal(newIndex);
       });
     });
   });
@@ -149,7 +149,7 @@ describe('FVS', function () {
 
     describe ('accepts "add" as a command', function () {
 
-      let blobRef,
+      let blobHash,
           blobDir,
           blobFile;
 
@@ -158,9 +158,9 @@ describe('FVS', function () {
         fs.mkdirSync('.fvs/objects');
         fs.writeFileSync('./test1.txt', 'test1 content', 'utf8');
 
-        blobRef = getSha1('test1 content');
-        blobDir = blobRef.slice(0, 2);
-        blobFile = blobRef.slice(2);
+        blobHash = getSha1('test1 content');
+        blobDir = blobHash.slice(0, 2);
+        blobFile = blobHash.slice(2);
       });
 
       afterEach(function () { rmdir('test1.txt') });
@@ -182,20 +182,20 @@ describe('FVS', function () {
         fvs.add();
         let index = fs.readFileSync('./.fvs/index', 'utf8');
 
-        expect(index).to.be.equal('test1.txt' + ' ' + blobRef);
+        expect(index).to.be.equal('test1.txt' + ' ' + blobHash);
       });
 
       it('updates the index entry after making a correction', function () {
         fs.writeFileSync('./test1.txt', 'test1 content edited', 'utf8');
-        blobRef = getSha1('test1 content edited');
-        blobDir = blobRef.slice(0, 2);
-        blobFile = blobRef.slice(2);
+        blobHash = getSha1('test1 content edited');
+        blobDir = blobHash.slice(0, 2);
+        blobFile = blobHash.slice(2);
 
         process.argv = ['', 'fvs', 'add', 'test1.txt'];
         fvs.add();
         let index = fs.readFileSync('./.fvs/index', 'utf8');
 
-        expect(index).to.be.equal('test1.txt' + ' ' + blobRef);
+        expect(index).to.be.equal('test1.txt' + ' ' + blobHash);
       });
     });
 

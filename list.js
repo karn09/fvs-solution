@@ -21,14 +21,13 @@ class ListNode {
 
   toString (useShort) {
     let cur = this,
-        str = '[';
+        arr = [];
     while (cur) {
-      useShort ? str += cur.id.slice(0, 6) : str += cur.id;
-      if (cur.next) str += ' ';
+      arr.push(cur.id);
       cur = cur.next;
     }
-    str += ']';
-    return str;
+    if (useShort) return '[' + arr.map(i => i.slice(0, 6)).join(' ') + ']';
+    else return '[' + arr.join(' ') + ']';
   }
 
   toStringShort () {
@@ -44,28 +43,29 @@ class ListNode {
     return new ListNode(value, this);
   }
 
+  // everything after the node we remove can be re-used
+  // everything before it needs to be copied
   remove (id) {
     if (this.id === id) return this.next ? this.next : null;
     else if (this.next) return new ListNode(this.value, this.next.remove(id));
-    else return new ListNode(this.value);
+    else return null; // not found
   }
 
   append (ln) {
-    if (!this.next) return new ListNode(this.value, ln);
-    else if (this.next) return new ListNode(this.value, this.next.append(ln));
-    else return new ListNode(this.value);
+    if (!this.next) return ln.shiftNode(this.value);
+    else return new ListNode(this.value, this.next.append(ln));
   }
 
   find (id) {
     if (this.id === id) return this;
     else if (this.next) return this.next.find(id);
-    else return null;
+    else return null; // not found
   }
 
-  splitAt(id) {
+  splitAt (id) {
     if (this.id === id) return null;
     else if (this.next) return new ListNode(this.value, this.next.splitAt(id));
-    else return null;
+    else return null; // not found
   }
 
   insertAt (id, ln) {
